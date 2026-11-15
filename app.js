@@ -135,14 +135,16 @@
   function renderCrumbs() {
     const p = currentProgram();
     const t = currentType();
-    $('#crumb2').textContent = p ? p.name : '';
-    const both = p && t ? `${p.name} › ${t.name}` : '';
+    $('#crumb2').textContent = p ? oneLine(p.name) : '';
+    const both = p && t ? `${oneLine(p.name)} › ${t.name}` : '';
     $('#crumb3').textContent = both;
     $('#crumb4').textContent = isFree() ? FREE_PROGRAM.name
       : t ? (t.budgetItem ? `${both}  (보탬e 보조세목: ${t.budgetItem})` : both) : '';
     $('#crumb5').textContent = $('#crumb4').textContent;
   }
 
+  // 사업 이름의 줄바꿈(설정 파일의 \n)은 카드에서만 쓰고, 다른 곳에서는 한 줄로
+  const oneLine = (s) => String(s || '').replace(/\s*\n\s*/g, ' ');
   const currentProgram = () => (state.programId === FREE_ID ? FREE_PROGRAM : config.programs.find((p) => p.id === state.programId));
   const currentType = () => (isFree() ? FREE_TYPE : config.types.find((t) => t.id === state.typeId));
 
@@ -169,7 +171,7 @@
       const picked = p.id === state.programId;
       return `<button type="button" class="card${picked ? ' selected' : ''}" data-program="${esc(p.id)}">
         <span class="c-tab">집행 유형 ${n}가지</span>
-        <span class="c-name">${esc(p.name)}</span>
+        <span class="c-name">${esc(p.name).replace(/\n/g, '<br>')}</span>
         <span class="c-go">${picked ? '✓ 고른 사업' : '고르기 →'}</span>
       </button>`;
     }).join('');
