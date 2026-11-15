@@ -123,7 +123,7 @@
     $('#crumb2').textContent = p ? p.name : '';
     const both = p && t ? `${p.name} › ${t.name}` : '';
     $('#crumb3').textContent = both;
-    $('#crumb4').textContent = t ? `${both}  (보탬e 보조세목: ${t.budgetItem})` : '';
+    $('#crumb4').textContent = t ? (t.budgetItem ? `${both}  (보탬e 보조세목: ${t.budgetItem})` : both) : '';
     $('#crumb5').textContent = $('#crumb4').textContent;
   }
 
@@ -150,7 +150,7 @@
     $('#typeCards').innerHTML = list.map((t) => `
       <button type="button" class="card${t.id === state.typeId ? ' selected' : ''}" data-type="${esc(t.id)}">
         <span class="c-name">${esc(t.name)}</span>
-        <span class="c-sub">보탬e 보조세목: ${esc(t.budgetItem)}</span>
+        ${t.budgetItem ? `<span class="c-sub">보탬e 보조세목: ${esc(t.budgetItem)}</span>` : ''}
         ${t.tip ? `<span class="c-tip">${esc(t.tip)}</span>` : ''}
       </button>`).join('') || '<p>이 사업에 등록된 집행 유형이 없습니다. 설정 파일을 확인해 주세요.</p>';
   }
