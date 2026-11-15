@@ -22,7 +22,7 @@
   --focus: #4767b0;
   --scrim: rgba(20, 26, 23, 0.45);
 
-  --font-sans: "IBM Plex Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   --r-sm: 4px;
   --r-md: 8px;
   --r-lg: 12px;
@@ -48,7 +48,8 @@
 html { font-size: 17px; -webkit-text-size-adjust: 100%; }
 body {
   margin: 0; background: var(--paper); color: var(--ink);
-  font-family: var(--font-sans); line-height: 1.65;
+  font-family: var(--font-sans); line-height: 1.65; letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
   word-break: keep-all; overflow-wrap: anywhere;
 }
 .wrap { max-width: 920px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
