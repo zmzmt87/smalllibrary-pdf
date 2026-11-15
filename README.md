@@ -10,9 +10,7 @@
 
 ## ① 사용 주소
 
-```
-https://<GitHub계정이름>.github.io/smalllibrary-pdf/
-```
+**https://zmzmt87.github.io/smalllibrary-pdf/**
 
 크롬·엣지·웨일(PC), 휴대폰 크롬·사파리에서 쓸 수 있습니다.
 
