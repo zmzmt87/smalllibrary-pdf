@@ -251,26 +251,12 @@
       "id": "fuel",
       "name": "유류비",
       "programs": ["냉난방비"],
-      "budgetItem": "",
+      "budgetItem": "공공요금 및 제세",
       "tip": "난방기기를 쓸 때만 가능합니다.",
       "docs": [
         { "name": "지출결의서", "required": true },
         { "name": "유류비 영수증", "required": true },
         { "name": "카드전표 또는 세금계산서", "required": true }
-      ]
-    },
-    {
-      "id": "signboard",
-      "name": "홍보배너·현판 제작",
-      "programs": ["냉난방비"],
-      "budgetItem": "",
-      "tip": "개소당 20만원 이내. 새로 참여한 도서관이거나 기존 현판이 훼손된 경우만. 현판은 경기도 표준디자인으로.",
-      "docs": [
-        { "name": "지출결의서", "required": true },
-        { "name": "카드전표 또는 세금계산서", "required": true },
-        { "name": "견적서", "required": true },
-        { "name": "납품서", "required": true },
-        { "name": "납품사진", "required": true, "multiple": true, "tip": "제작 내용이 또렷이 보이게 찍어 주세요(안 보이면 정산 불인정)" }
       ]
     },
     {
