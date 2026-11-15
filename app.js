@@ -643,7 +643,7 @@
   // 한도 안에 들어오도록 나눠서 PDF를 만듭니다. 안 되면 사진을 더 줄여 다시 시도.
   async function makeFiles() {
     const flat = state.slots.flatMap((s, si) => s.items.map((it) => ({ it, si })));
-    const toPortrait = ($('input[name="landscape"]:checked') || {}).value === 'portrait';
+    const toPortrait = false; // 가로 사진은 A4 가로 페이지로. 세로로 넣으려면 서류 칸에서 [돌리기]
     const limit = limitBytes();
     for (const small of [false, true]) {
       const parts = planParts(flat, small);
