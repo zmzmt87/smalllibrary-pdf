@@ -113,9 +113,12 @@
       li.classList.toggle('done', k < n && canGo(k + 1));
       $('button', li).disabled = !canGo(k);
     });
+    $('#stepsNow').innerHTML = `<b>${n} / 5단계</b> · ${STEP_NAMES[n]}`;
     renderCrumbs();
     window.scrollTo(0, 0);
   }
+
+  const STEP_NAMES = { 1: '사업 고르기', 2: '집행 유형 고르기', 3: '집행 정보 적기', 4: '서류 넣기', 5: '확인하고 저장하기' };
 
   function renderCrumbs() {
     const p = currentProgram();
@@ -138,9 +141,11 @@
   function renderPrograms() {
     $('#programCards').innerHTML = config.programs.map((p) => {
       const n = config.types.filter((t) => (t.programs || []).includes(p.id)).length;
-      return `<button type="button" class="card${p.id === state.programId ? ' selected' : ''}" data-program="${esc(p.id)}">
+      const picked = p.id === state.programId;
+      return `<button type="button" class="card${picked ? ' selected' : ''}" data-program="${esc(p.id)}">
+        <span class="c-tab">집행 유형 ${n}가지</span>
         <span class="c-name">${esc(p.name)}</span>
-        <span class="c-tip">집행 유형 ${n}가지</span>
+        <span class="c-go">${picked ? '✓ 고른 사업' : '고르기 →'}</span>
       </button>`;
     }).join('');
   }
@@ -149,9 +154,10 @@
     const list = config.types.filter((t) => (t.programs || []).includes(state.programId));
     $('#typeCards').innerHTML = list.map((t) => `
       <button type="button" class="card${t.id === state.typeId ? ' selected' : ''}" data-type="${esc(t.id)}">
+        ${t.budgetItem ? `<span class="c-tab" title="보탬e 보조세목">${esc(t.budgetItem)}</span>` : ''}
         <span class="c-name">${esc(t.name)}</span>
-        ${t.budgetItem ? `<span class="c-sub">보탬e 보조세목: ${esc(t.budgetItem)}</span>` : ''}
         ${t.tip ? `<span class="c-tip">${esc(t.tip)}</span>` : ''}
+        <span class="c-go">${t.id === state.typeId ? '✓ 고른 유형' : '고르기 →'}</span>
       </button>`).join('') || '<p>이 사업에 등록된 집행 유형이 없습니다. 설정 파일을 확인해 주세요.</p>';
   }
 
@@ -191,9 +197,8 @@
       doc: { name: '기타 서류', required: false, multiple: true, tip: '목록에 없는 서류가 있으면 여기에 넣어 주세요', other: true },
       items: [], busy: 0, msg: '',
     });
-    const tip = $('#typeTip4');
-    tip.hidden = !t.tip;
-    tip.textContent = t.tip ? '📌 ' + t.tip : '';
+    $('#typeTip4').hidden = !t.tip;
+    $('#typeTip4Text').textContent = t.tip || '';
   }
 
   function clearFiles() {
@@ -226,27 +231,29 @@
     const d = s.doc;
     const n = s.items.length;
     const cls = ['slot'];
+    const missing = !n && d.required && state.checked;
     if (n) cls.push('filled');
-    else if (d.required && state.checked) cls.push('missing');
+    else if (missing) cls.push('missing');
     const badge = d.other ? '' : d.required ? '<span class="badge req">필수</span>' : '<span class="badge opt">해당 시</span>';
     const tip = d.tip || (d.multiple ? '여러 장을 넣을 수 있습니다' : '');
     const thumbs = s.items.map((it, k) => thumbHtml(it, k, n)).join('');
+    const num = n ? '✓' : missing ? '!' : d.other ? '+' : i + 1;
     return `<div class="${cls.join(' ')}" data-i="${i}">
       <div class="slot-head">
-        <span class="num">${d.other ? '+' : i + 1}</span>
-        <span class="name">${esc(d.name)}</span>
+        <span class="num" aria-hidden="true">${num}</span>
+        <span class="name">${d.other ? '' : `${i + 1}. `}${esc(d.name)}</span>
         ${badge}
-        ${n ? `<span class="badge cnt">${n}쪽</span>` : ''}
+        ${n ? `<span class="badge cnt">${n}쪽 넣음</span>` : ''}
       </div>
       ${tip ? `<p class="tip">${esc(tip)}</p>` : ''}
       <div class="drop">
-        <p class="drop-msg">여기에 끌어다 놓거나</p>
-        <label class="btn">📁 파일 선택<input class="vh" type="file" multiple accept="${ACCEPT}"></label>
-        <label class="btn camera">📷 사진 찍기<input class="vh" type="file" accept="image/*" capture="environment"></label>
+        <p class="drop-msg">${n ? '더 넣으려면 끌어다 놓거나' : '여기로 끌어다 놓거나'}</p>
+        <label class="btn">파일 고르기<input class="vh" type="file" multiple accept="${ACCEPT}"></label>
+        <label class="btn camera">사진 찍기<input class="vh" type="file" accept="image/*" capture="environment"></label>
       </div>
-      ${s.busy ? `<p class="slot-busy">⏳ 파일을 처리하는 중입니다… (${s.busy}개 남음)</p>` : ''}
+      ${s.busy ? `<p class="slot-busy">파일을 처리하는 중입니다… (${s.busy}개 남음)</p>` : ''}
       ${s.msg ? `<p class="slot-msg">${esc(s.msg)}</p>` : ''}
-      ${!n && d.required && state.checked ? '<p class="slot-msg">이 서류가 없습니다.</p>' : ''}
+      ${missing ? '<p class="slot-msg">이 서류가 없습니다.</p>' : ''}
       <div class="thumbs">${thumbs}</div>
     </div>`;
   }
@@ -258,10 +265,10 @@
       <div class="pic" title="끌어서 순서를 바꿀 수 있습니다">${pic}</div>
       <div class="cap" title="${esc(it.name)}">${k + 1}. ${esc(it.label || it.name)}</div>
       <div class="tools">
-        <button type="button" data-act="up" title="앞으로" aria-label="앞으로" ${k === 0 ? 'disabled' : ''}>◀</button>
-        <button type="button" data-act="down" title="뒤로" aria-label="뒤로" ${k === n - 1 ? 'disabled' : ''}>▶</button>
-        <button type="button" data-act="rot" title="오른쪽으로 돌리기" aria-label="돌리기">⟳</button>
-        <button type="button" data-act="del" class="del" title="빼기" aria-label="빼기">🗑</button>
+        <button type="button" data-act="up" ${k === 0 ? 'disabled' : ''}>◀ 앞으로</button>
+        <button type="button" data-act="down" ${k === n - 1 ? 'disabled' : ''}>뒤로 ▶</button>
+        <button type="button" data-act="rot" title="오른쪽으로 90도">↻ 돌리기</button>
+        <button type="button" data-act="del" class="del">빼기</button>
       </div>
     </div>`;
   }
@@ -536,8 +543,8 @@
       const n = s.items.length;
       if (s.doc.other && !n) return '';
       let cls, mark, cnt;
-      if (n) { cls = 'ok'; mark = '✔'; cnt = `${n}쪽`; }
-      else if (s.doc.required) { cls = 'missing'; mark = '✖'; cnt = '없음 (필수)'; }
+      if (n) { cls = 'ok'; mark = '✓'; cnt = `${n}쪽`; }
+      else if (s.doc.required) { cls = 'missing'; mark = '!'; cnt = '없음 (필수)'; }
       else { cls = 'skip'; mark = '–'; cnt = '없음 (해당 시)'; }
       return `<li class="${cls}"><span class="mark">${mark}</span><span class="sname">${s.doc.other ? '' : i + 1 + '. '}${esc(s.doc.name)}</span><span class="scount">${cnt}</span></li>`;
     }).join('');
@@ -603,16 +610,16 @@
     triggerDownload(files[0].url, files[0].name);
 
     $('#resultTitle').textContent = many
-      ? `✅ 용량이 커서 파일 ${files.length}개로 나눠 저장했습니다`
-      : '✅ 저장했습니다';
+      ? `용량이 커서 파일 ${files.length}개로 나눠 저장했습니다`
+      : '저장했습니다';
     $('#resultFiles').innerHTML = files.map((f, i) => `
       <a class="btn dl ${i === 0 ? '' : 'primary'}" href="${f.url}" download="${esc(f.name)}">
-        <span class="dl-main">⬇ ${many ? `${i + 1}번 파일 ` : ''}${i === 0 ? '다시 ' : ''}내려받기</span>
+        <span class="dl-main">↓${many ? `${i + 1}번 파일 ` : ''}${i === 0 ? '다시 ' : ''}내려받기</span>
         <span class="dl-sub">${esc(f.name)} · ${f.pages}쪽 · ${fmtMB(f.size)}</span>
       </a>`).join('');
     const warn = $('#resultWarn');
     const warns = [];
-    if (many) warns.push(`⚠ 1번 파일은 내려받았습니다. 아래 [2번 파일 내려받기]${files.length > 2 ? ' 등' : ''}도 꼭 눌러 주세요.`);
+    if (many) warns.push(`1번 파일은 내려받았습니다. 아래 [2번 파일 내려받기]${files.length > 2 ? ' 등' : ''}도 꼭 눌러 주세요.`);
     if (result.small) warns.push('용량을 맞추려고 사진을 조금 더 작게 줄였습니다.');
     warn.hidden = !warns.length;
     warn.innerHTML = warns.map(esc).join('<br>');

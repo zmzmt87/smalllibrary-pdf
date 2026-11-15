@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>작은도서관 보조금 증빙 PDF 합치기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <!-- 서류 목록 설정 파일: 해마다 바꿀 때 아래 data-config 값만 고치면 됩니다 -->
@@ -13,6 +16,7 @@
   <div class="wrap">
     <h1 id="appTitle">작은도서관 보조금 증빙 PDF 합치기</h1>
     <p class="privacy">넣은 서류는 인터넷에 올라가지 않고, 이 화면에서 바로 합쳐집니다.</p>
+    <p class="steps-now" id="stepsNow" aria-live="polite"></p>
     <ol class="steps" id="steps">
       <li data-step="1"><button type="button"><b>1</b><span>사업</span></button></li>
       <li data-step="2"><button type="button"><b>2</b><span>유형</span></button></li>
@@ -49,28 +53,28 @@
     <p class="crumb" id="crumb2"></p>
     <h2 class="q">무엇을 집행했나요?</h2>
     <div class="cards" id="typeCards"></div>
-    <div class="nav"><button type="button" class="btn" data-go="1">◀ 이전</button></div>
+    <div class="nav"><button type="button" class="btn" data-go="1">← 이전</button></div>
   </section>
 
   <!-- 3단계: 집행 정보 -->
   <section class="screen" data-screen="3" hidden>
     <p class="crumb" id="crumb3"></p>
-    <h2 class="q">집행 정보 (적지 않아도 됩니다)</h2>
-    <p class="sub">여기 적은 내용은 PDF 파일 이름을 만드는 데에만 쓰입니다.</p>
+    <h2 class="q">집행 정보를 적어 주세요</h2>
+    <p class="sub">PDF 파일 이름을 만드는 데에만 쓰입니다. 모두 비워 두어도 됩니다.</p>
     <form class="info-form" id="infoForm" autocomplete="off" onsubmit="return false">
       <label>집행일
         <input type="date" id="infoDate">
       </label>
-      <label>금액 (원)
-        <input type="text" id="infoAmount" inputmode="numeric" placeholder="예: 364800">
+      <label>금액
+        <span class="unit-row"><input type="text" id="infoAmount" inputmode="numeric" placeholder="예: 364,800"><span>원</span></span>
       </label>
       <label>거래처 또는 내용
         <input type="text" id="infoVendor" placeholder="예: 재봉틀수업">
       </label>
     </form>
     <div class="nav">
-      <button type="button" class="btn" data-go="2">◀ 이전</button>
-      <button type="button" class="btn primary" data-go="4">다음: 서류 넣기 ▶</button>
+      <button type="button" class="btn" data-go="2">← 이전</button>
+      <button type="button" class="btn primary" data-go="4">다음: 서류 넣기 →</button>
     </div>
   </section>
 
@@ -78,15 +82,15 @@
   <section class="screen" data-screen="4" hidden>
     <p class="crumb" id="crumb4"></p>
     <h2 class="q">서류를 칸마다 넣어 주세요</h2>
-    <p class="type-tip" id="typeTip4" hidden></p>
-    <p class="sub">파일을 칸에 끌어다 놓거나 [파일 선택]을 누르세요. 한 칸에 여러 장 넣을 수 있습니다.<br>
-      사진(JPG·PNG·아이폰 HEIC)과 PDF를 넣을 수 있습니다. 한글·엑셀 파일은 먼저 PDF로 저장해 주세요.</p>
+    <p class="sub">파일을 칸에 끌어다 놓거나 [파일 고르기]를 누르세요. 한 칸에 여러 장 넣을 수 있습니다.
+      사진(JPG·PNG·아이폰 HEIC)과 PDF를 넣을 수 있고, 한글·엑셀 파일은 먼저 PDF로 저장해 주세요.</p>
+    <div class="notice" id="typeTip4" hidden><span class="notice-kind">알림</span><p id="typeTip4Text"></p></div>
     <div id="slots"></div>
     <div class="bottom-bar">
       <span id="sizeInfo4">넣은 서류 0쪽</span>
       <div class="bar-btns">
-        <button type="button" class="btn" data-go="3">◀ 이전</button>
-        <button type="button" class="btn primary" data-go="5">다음: 저장 ▶</button>
+        <button type="button" class="btn" data-go="3">← 이전</button>
+        <button type="button" class="btn primary" data-go="5">다음: 확인하고 저장 →</button>
       </div>
     </div>
   </section>
@@ -109,12 +113,12 @@
     </label>
 
     <div class="nav">
-      <button type="button" class="btn" data-go="4">◀ 서류 고치기</button>
-      <button type="button" class="btn primary big" id="btnSave">📄 PDF로 저장</button>
+      <button type="button" class="btn" data-go="4">← 서류 고치기</button>
+      <button type="button" class="btn primary big" id="btnSave">PDF로 저장하기</button>
     </div>
 
     <div class="result" id="result" hidden>
-      <p class="ok" id="resultTitle">✅ 저장했습니다</p>
+      <p class="ok" id="resultTitle">저장했습니다</p>
       <p class="warn" id="resultWarn" hidden></p>
       <div class="dl-list" id="resultFiles"></div>
       <p class="guide" id="resultGuide"></p>
@@ -141,16 +145,16 @@
     <li>집행일·금액·거래처를 적으면 파일 이름이 자동으로 만들어집니다. 비워도 됩니다.</li>
     <li>서류 칸이 순서대로 나옵니다. 칸마다 사진이나 PDF를 넣으세요.
       <ul>
-        <li>컴퓨터: 파일을 칸 위로 끌어다 놓거나 [파일 선택]</li>
+        <li>컴퓨터: 파일을 칸 위로 끌어다 놓거나 [파일 고르기]</li>
         <li>휴대폰: [사진 찍기]로 바로 찍어서 넣기</li>
         <li>한글(HWP)·엑셀 파일은 먼저 'PDF로 저장'한 뒤 넣습니다.</li>
       </ul>
     </li>
-    <li>넣은 사진은 ◀ ▶ 로 순서를 바꾸고, ⟳ 로 돌리고, 🗑 로 뺄 수 있습니다.</li>
+    <li>넣은 사진 아래 [◀ 앞으로] [뒤로 ▶]로 순서를 바꾸고, [↻ 돌리기]로 돌리고, [빼기]로 뺄 수 있습니다.</li>
     <li>[PDF로 저장]을 누르면 서류가 순서대로 한 파일로 합쳐져 내려받아집니다.</li>
     <li>보탬e 첨부란에는 <b>그 파일 하나만</b> 올리면 됩니다.</li>
   </ol>
-  <p class="warn">⚠ 저장하기 전에 새로고침하거나 창을 닫으면 넣은 파일이 모두 사라집니다.</p>
+  <div class="notice warn"><span class="notice-kind">주의</span><p>저장하기 전에 새로고침하거나 창을 닫으면 넣은 파일이 모두 사라집니다.</p></div>
   <p>넣은 서류는 인터넷에 올라가지 않고, 이 화면에서 바로 합쳐집니다. 신분증·통장사본을 넣어도 안심하셔도 됩니다.</p>
   <form method="dialog"><button class="btn primary">닫기</button></form>
 </dialog>
