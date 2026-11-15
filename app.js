@@ -283,6 +283,7 @@
       ${s.busy ? `<p class="slot-busy">파일을 처리하는 중입니다… (${s.busy}개 남음)</p>` : ''}
       ${s.msg ? `<p class="slot-msg">${esc(s.msg)}</p>` : ''}
       ${missing ? '<p class="slot-check">비어 있어요. 다른 파일에 함께 들어 있거나 비슷한 서류로 냈다면 그대로 두셔도 됩니다.</p>' : ''}
+      ${n > 2 ? `<p class="swipe-hint">옆으로 밀면 넣은 ${n}장을 모두 볼 수 있어요 →</p>` : ''}
       <div class="thumbs">${thumbs}</div>
     </div>`;
   }

@@ -164,7 +164,7 @@ input[type="radio"], input[type="checkbox"] { width: 20px; height: 20px; margin:
 
 /* ---------- 서류 칸 ---------- */
 #slots { display: grid; gap: 12px; }
-.slot { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 18px 20px; transition: border-color .15s, background-color .15s; }
+.slot { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 18px 20px; min-width: 0; transition: border-color .15s, background-color .15s; }
 .slot.over { border-color: var(--folder); background: var(--folder-tint); }
 .slot.filled { border-color: var(--brand-line); }
 .slot.missing { border-color: var(--folder); background: var(--folder-tint); }
@@ -201,7 +201,7 @@ label.btn:focus-within { outline: 3px solid var(--focus); outline-offset: 2px; }
 /* 넣은 장 */
 .thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 12px; }
 .thumbs:empty { display: none; }
-.thumb { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 6px; display: flex; flex-direction: column; gap: 6px; }
+.thumb { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 6px; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
 .thumb.dragging { opacity: 0.4; }
 .thumb .pic { aspect-ratio: 3 / 4; max-width: 100%; background: var(--paper); border-radius: var(--r-sm); overflow: hidden; display: grid; place-items: center; cursor: grab; }
 .thumb .pic img { width: 100%; height: 100%; object-fit: contain; transition: transform .2s; pointer-events: none; }
@@ -290,7 +290,11 @@ dialog .btn { margin-top: 8px; }
   .cards { grid-template-columns: 1fr; }
   .slot { padding: 16px; }
   .slot .tip { margin-left: 0; }
-  .thumbs { grid-template-columns: repeat(2, 1fr); }
+  /* 휴대폰: 넣은 장은 옆으로 밀어서 보기 */
+  .thumbs { display: flex; overflow-x: auto; gap: 8px; padding-bottom: 8px; scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+  .thumbs .thumb { flex: 0 0 138px; scroll-snap-align: start; }
+  .thumbs::-webkit-scrollbar { height: 6px; }
+  .thumbs::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 3px; }
   .nav .btn { flex: 1; }
   .bottom-bar { flex-direction: column; align-items: stretch; gap: 8px; }
   .bar-btns .btn { flex: 1; }
@@ -307,3 +311,7 @@ dialog .btn { margin-top: 8px; }
 .free-desc { margin: 2px 0 0; color: var(--ink-muted); font-size: 0.88rem; }
 #reqNote .notice-kind { color: var(--folder-ink); }
 #reqNote { background: var(--surface); border: 1px solid var(--line); }
+
+/* 휴대폰에서만 보이는 '옆으로 밀기' 안내 */
+.swipe-hint { display: none; margin: 10px 0 0; font-size: 0.82rem; color: var(--ink-muted); }
+@media (max-width: 640px) { .swipe-hint { display: block; } }
