@@ -167,7 +167,7 @@ input[type="radio"], input[type="checkbox"] { width: 20px; height: 20px; margin:
 .slot { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 18px 20px; transition: border-color .15s, background-color .15s; }
 .slot.over { border-color: var(--folder); background: var(--folder-tint); }
 .slot.filled { border-color: var(--brand-line); }
-.slot.missing { border-color: var(--stamp); background: var(--stamp-tint); }
+.slot.missing { border-color: var(--folder); background: var(--folder-tint); }
 .slot-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .slot-head .num {
   display: inline-grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: 999px;
@@ -175,7 +175,7 @@ input[type="radio"], input[type="checkbox"] { width: 20px; height: 20px; margin:
   font-variant-numeric: tabular-nums;
 }
 .slot.filled .num { background: var(--brand); border-color: var(--brand); color: var(--on-brand); }
-.slot.missing .num { background: var(--surface); border-color: var(--stamp); color: var(--stamp); }
+.slot.missing .num { background: var(--surface); border-color: var(--folder-ink); color: var(--folder-ink); }
 .slot-head .name { font-size: 1.12rem; line-height: 1.45; font-weight: 600; }
 .badge { display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: var(--r-sm); font-size: 0.77rem; font-weight: 500; }
 .badge.req { border: 1px solid var(--stamp); color: var(--stamp); }
@@ -195,6 +195,7 @@ label.btn { position: relative; }
 label.btn:focus-within { outline: 3px solid var(--focus); outline-offset: 2px; }
 @media (pointer: fine) { .camera { display: none; } }
 .slot-msg { margin: 8px 0 0; color: var(--stamp); font-size: 0.88rem; white-space: pre-line; }
+.slot-check { margin: 8px 0 0; color: var(--folder-ink); font-size: 0.88rem; }
 .slot-busy { margin: 8px 0 0; color: var(--brand); font-size: 0.88rem; }
 
 /* 넣은 장 */
@@ -236,8 +237,8 @@ label.btn:focus-within { outline: 3px solid var(--focus); outline-offset: 2px; }
 .summary .sname { flex: 1; }
 .summary .scount { color: var(--ink-muted); white-space: nowrap; font-size: 0.88rem; font-variant-numeric: tabular-nums; }
 .summary li.ok .mark { color: var(--brand); }
-.summary li.missing { background: var(--stamp-tint); color: var(--stamp); }
-.summary li.missing .scount { color: var(--stamp); }
+.summary li.missing { background: var(--folder-tint); color: var(--ink); }
+.summary li.missing .mark, .summary li.missing .scount { color: var(--folder-ink); }
 .summary li.skip { color: var(--ink-muted); }
 .size-line { font-size: 0.88rem; color: var(--ink-muted); margin: 0 0 24px; }
 .size-line b { color: var(--ink); }
@@ -295,3 +296,14 @@ dialog .btn { margin-top: 8px; }
   .bar-btns .btn { flex: 1; }
   .btn.big { width: 100%; }
 }
+
+/* ---------- 파일만 합치기 ---------- */
+.free-merge {
+  margin-top: 32px; padding: 18px 20px; border: 1.5px dashed var(--line-strong); border-radius: var(--r-lg);
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; background: var(--surface);
+}
+.free-merge > div { flex: 1 1 320px; min-width: 0; }
+.free-title { margin: 0; font-weight: 600; font-size: 1.06rem; }
+.free-desc { margin: 2px 0 0; color: var(--ink-muted); font-size: 0.88rem; }
+#reqNote .notice-kind { color: var(--folder-ink); }
+#reqNote { background: var(--surface); border: 1px solid var(--line); }

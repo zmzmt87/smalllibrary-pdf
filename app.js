@@ -91,13 +91,21 @@
 
   /* ---------------- 단계 이동 ---------------- */
 
+  // '서류 목록 없이 파일만 합치기' 모드: 사업·유형·정보 단계를 건너뛰고 칸 하나에 넣어 합칩니다.
+  const FREE_ID = '__free';
+  const FREE_PROGRAM = { id: FREE_ID, name: '서류 목록 없이 파일만 합치기' };
+  const FREE_TYPE = { id: FREE_ID, name: '파일 합치기', programs: [], budgetItem: '', tip: '', docs: [] };
+  const isFree = () => state.typeId === FREE_ID;
+
   function canGo(n) {
     if (n <= 1) return true;
+    if (isFree()) return n >= 4;
     if (n === 2) return !!state.programId;
     return !!state.typeId;
   }
 
   function goStep(n) {
+    if (isFree() && (n === 2 || n === 3)) n = 1;
     if (!canGo(n)) return;
     if (n === 5) {
       state.checked = true;
@@ -113,7 +121,11 @@
       li.classList.toggle('done', k < n && canGo(k + 1));
       $('button', li).disabled = !canGo(k);
     });
-    $('#stepsNow').innerHTML = `<b>${n} / 5단계</b> · ${STEP_NAMES[n]}`;
+    $('#stepsNow').innerHTML = isFree() && n >= 4
+      ? `<b>파일만 합치기</b> · ${n === 4 ? '파일 넣기' : '확인하고 저장하기'}`
+      : `<b>${n} / 5단계</b> · ${STEP_NAMES[n]}`;
+    $('#q4').textContent = isFree() ? '합칠 파일을 넣어 주세요' : '서류를 칸마다 넣어 주세요';
+    $('#reqNote').hidden = isFree();
     renderCrumbs();
     window.scrollTo(0, 0);
   }
@@ -126,12 +138,25 @@
     $('#crumb2').textContent = p ? p.name : '';
     const both = p && t ? `${p.name} › ${t.name}` : '';
     $('#crumb3').textContent = both;
-    $('#crumb4').textContent = t ? (t.budgetItem ? `${both}  (보탬e 보조세목: ${t.budgetItem})` : both) : '';
+    $('#crumb4').textContent = isFree() ? FREE_PROGRAM.name
+      : t ? (t.budgetItem ? `${both}  (보탬e 보조세목: ${t.budgetItem})` : both) : '';
     $('#crumb5').textContent = $('#crumb4').textContent;
   }
 
-  const currentProgram = () => config.programs.find((p) => p.id === state.programId);
-  const currentType = () => config.types.find((t) => t.id === state.typeId);
+  const currentProgram = () => (state.programId === FREE_ID ? FREE_PROGRAM : config.programs.find((p) => p.id === state.programId));
+  const currentType = () => (isFree() ? FREE_TYPE : config.types.find((t) => t.id === state.typeId));
+
+  function startFree() {
+    if (!isFree()) {
+      if (hasFiles() && !confirm('지금 넣은 파일이 모두 지워집니다. 파일만 합치기로 바꿀까요?')) return;
+      clearFiles();
+      state.programId = FREE_ID;
+      state.typeId = FREE_ID;
+      buildSlots();
+      renderPrograms();
+    }
+    goStep(4);
+  }
   const allItems = () => state.slots.flatMap((s) => s.items);
   const hasFiles = () => allItems().length > 0;
   const busyCount = () => state.slots.reduce((n, s) => n + s.busy, 0);
@@ -194,7 +219,9 @@
     state.fileNameEdited = false;
     state.slots = t.docs.map((d) => ({ doc: d, items: [], busy: 0, msg: '' }));
     state.slots.push({
-      doc: { name: '기타 서류', required: false, multiple: true, tip: '목록에 없는 서류가 있으면 여기에 넣어 주세요', other: true },
+      doc: isFree()
+        ? { name: '합칠 파일', required: false, multiple: true, tip: '넣은 순서대로 합쳐집니다. 사진 아래 [◀ 앞으로] [뒤로 ▶]로 순서를 바꿀 수 있어요.', other: true }
+        : { name: '기타 서류', required: false, multiple: true, tip: '어느 칸에 넣을지 애매한 서류는 여기에 넣어 주세요', other: true },
       items: [], busy: 0, msg: '',
     });
     $('#typeTip4').hidden = !t.tip;
@@ -237,7 +264,7 @@
     const badge = d.other ? '' : d.required ? '<span class="badge req">필수</span>' : '<span class="badge opt">해당 시</span>';
     const tip = d.tip || (d.multiple ? '여러 장을 넣을 수 있습니다' : '');
     const thumbs = s.items.map((it, k) => thumbHtml(it, k, n)).join('');
-    const num = n ? '✓' : missing ? '!' : d.other ? '+' : i + 1;
+    const num = n ? '✓' : missing ? '?' : d.other ? '+' : i + 1;
     return `<div class="${cls.join(' ')}" data-i="${i}">
       <div class="slot-head">
         <span class="num" aria-hidden="true">${num}</span>
@@ -253,7 +280,7 @@
       </div>
       ${s.busy ? `<p class="slot-busy">파일을 처리하는 중입니다… (${s.busy}개 남음)</p>` : ''}
       ${s.msg ? `<p class="slot-msg">${esc(s.msg)}</p>` : ''}
-      ${missing ? '<p class="slot-msg">이 서류가 없습니다.</p>' : ''}
+      ${missing ? '<p class="slot-check">비어 있어요. 다른 파일에 함께 들어 있거나 비슷한 서류로 냈다면 그대로 두셔도 됩니다.</p>' : ''}
       <div class="thumbs">${thumbs}</div>
     </div>`;
   }
@@ -544,7 +571,7 @@
       if (s.doc.other && !n) return '';
       let cls, mark, cnt;
       if (n) { cls = 'ok'; mark = '✓'; cnt = `${n}쪽`; }
-      else if (s.doc.required) { cls = 'missing'; mark = '!'; cnt = '없음 (필수)'; }
+      else if (s.doc.required) { cls = 'missing'; mark = '?'; cnt = '비어 있음 · 확인'; }
       else { cls = 'skip'; mark = '–'; cnt = '없음 (해당 시)'; }
       return `<li class="${cls}"><span class="mark">${mark}</span><span class="sname">${s.doc.other ? '' : i + 1 + '. '}${esc(s.doc.name)}</span><span class="scount">${cnt}</span></li>`;
     }).join('');
@@ -575,7 +602,7 @@
     if (busyCount() > 0) { alert('아직 파일을 처리하는 중입니다. 잠시 후 다시 눌러 주세요.'); return; }
     if (!hasFiles()) { alert('넣은 서류가 없습니다. 서류를 먼저 넣어 주세요.'); return; }
     const missing = state.slots.filter((s) => s.doc.required && !s.items.length).map((s) => s.doc.name);
-    if (missing.length && !confirm(`${missing.join(', ')} 서류가 없습니다.\n그래도 저장할까요?`)) return;
+    if (missing.length && !confirm(`아래 필수 칸이 비어 있어요.\n· ${missing.join('\n· ')}\n\n다른 파일에 함께 들어 있거나 비슷한 서류로 냈다면 그대로 저장하셔도 됩니다.\n이대로 저장할까요?`)) return;
 
     const base = cleanFileName($('#fileName').value) || makeFileName();
     $('#fileName').value = base;
@@ -727,7 +754,7 @@
     downloadUrls = [];
     if (keep && state.typeId) {
       buildSlots();
-      goStep(3);
+      goStep(isFree() ? 4 : 3);
     } else {
       state.programId = null;
       state.typeId = null;
@@ -762,6 +789,7 @@
       const li = e.target.closest('li[data-step]');
       if (li) goStep(Number(li.dataset.step));
     });
+    $('#btnFree').addEventListener('click', startFree);
     $('#btnHelp').addEventListener('click', () => {
       const d = $('#helpDialog');
       if (d.showModal) d.showModal(); else d.setAttribute('open', '');
@@ -864,5 +892,5 @@
   }
 
   // 시험·점검용 (파일을 밖으로 보내는 기능 없음)
-  window.__pdfTool = { state, config: () => config, addFiles, goStep, selectProgram, selectType, makeFiles, planParts, buildPdf: () => buildPdf(allItems()) };
+  window.__pdfTool = { state, config: () => config, addFiles, goStep, selectProgram, selectType, startFree, makeFiles, planParts, buildPdf: () => buildPdf(allItems()) };
 })();
